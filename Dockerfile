@@ -1,26 +1,27 @@
+# Use the latest Ubuntu image
 FROM ubuntu:latest
 
-WORKDIR /usr/src/app
+RUN useradd -m appuser
+
+USER appuser
+
+USER root
 
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
-    python3-venv \
     python3-dev \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+    build-essential && \
+    rm -rf /var/lib/apt/lists/*  # Clean up after installation
 
-RUN python3 -m venv /usr/src/app/venv
+COPY --chown=appuser:appuser src/requirements.txt /usr/src/app/
 
-RUN /usr/src/app/venv/bin/pip install --upgrade pip
+USER appuser
 
-ENV PATH="/usr/src/app/venv/bin:$PATH"
+RUN pip3 install --no-cache-dir -r /usr/src/app/requirements.txt
 
-COPY src/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY src/app.py .
+COPY --chown=appuser:appuser src/app.py /usr/src/app/
 
 EXPOSE 5000
 
-CMD ["python3", "app.py"]
+CMD ["python3", "/usr/src/app/app.py"]
