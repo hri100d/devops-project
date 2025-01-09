@@ -24,13 +24,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Cache Python dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
       - name: Setup Python
         uses: actions/setup-python@v1
         with:
@@ -41,7 +34,7 @@ jobs:
       - name: Run flake8
         uses: suo/flake8-github-action@releases/v1
         with:
-          checkName: "flake8"
+          checkName: "flake8" # NOTE: this needs to be the same as the job name
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -51,13 +44,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Cache Python dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
       - name: Setup Python
         uses: actions/setup-python@v1
         with:
@@ -99,28 +85,12 @@ jobs:
     needs: [ database_test ]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Cache Python dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Cache Node modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
-      - name: Install Python dependencies
-        run: pip install -r requirements.txt
-      - name: Install Node.js dependencies
-        run: npm install -g snyk
+      - uses: actions/checkout@v3
       - name: Run Snyk
+        working-directory: ${{ github.workspace }}/src
         run: |
+          pip install -r requirements.txt
+          npm install -g snyk
           snyk auth ${{ secrets.SNYK_TOKEN }}
           snyk test
           snyk fix
