@@ -1,14 +1,12 @@
-
+# Base image
 FROM ubuntu:latest
 
 WORKDIR /usr/src/app
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-venv \
-    python3-dev \
-    build-essential \
     && python3 -m venv /usr/src/app/venv \
     && /usr/src/app/venv/bin/pip install --upgrade pip \
     && rm -rf /var/lib/apt/lists/*
