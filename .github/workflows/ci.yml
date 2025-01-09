@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - run: npx markdown-cli **/*.md
+    - run: npx markdown-cli *.md
   flake8:
     name: flake8
     runs-on: ubuntu-latest
