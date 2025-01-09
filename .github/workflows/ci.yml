@@ -55,7 +55,7 @@ jobs:
         run: python3 -m unittest src/app_test.py
 
   database_test:
-    needs: [ unittest, flake8, makrdown-lint, editorconfig-checker ]
+    needs: [ unittest, flake8, markdown-lint, editorconfig-checker ]
     runs-on: ubuntu-latest
     services:
       postgres:
