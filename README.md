@@ -12,12 +12,12 @@ The CI/CD pipeline is defined in the following GitHub Actions workflows:
 
 #### **Jobs in the CI Workflow:**
 
-1. **EditorConfig Checker**  
+1. **EditorConfig Checker**
    - **Description**: Ensures consistent coding styles using `.editorconfig` rules.
    - **Key Tools**: `editorconfig-checker`.
    - **Trigger**: Runs on every push.
 
-2. **Markdown Lint**  
+2. **Markdown Lint**
    - **Description**: Validates Markdown files to ensure proper formatting.
    - **Key Tools**: `markdown-cli` (executed via `npx`).
    - **Trigger**: Runs on every push.
@@ -53,7 +53,7 @@ The CI/CD pipeline is defined in the following GitHub Actions workflows:
    - **Key Tools**: `docker` and `Trivy` vulnerability scanner.
    - **Dependencies**: Requires successful completion of Unit Tests, Flake8, Markdown Lint, and EditorConfig Checker.
 
-9. **Push Docker Image**  
+9. **Push Docker Image**
    - **Description**: Pushes the tested Docker image to Docker Hub.
    - **Key Tools**: `docker/login-action` and `docker push`.
    - **Dependencies**: Requires successful completion of Test Docker Image, Snyk, and SonarCloud Analysis.
