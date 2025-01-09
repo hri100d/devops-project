@@ -66,19 +66,19 @@ jobs:
   #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   database_test:
-  needs: [ unittest, flake8, makrdown-lint, editorconfig-checker ]
-  runs-on: ubuntu-latest
-  services:
-  steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.10.16
-    - name: Install dependencies
-      run: pip install -r src/requirements.txt
-    - name: Run SQLite tests
-      run: python3 -m unittest src/app_test.py
+    needs: [ unittest, flake8, makrdown-lint, editorconfig-checker ]
+    runs-on: ubuntu-latest
+    services:
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.10.16
+      - name: Install dependencies
+        run: pip install -r src/requirements.txt
+      - name: Run SQLite tests
+        run: python3 -m unittest src/app_test.py
 
   sast:
     needs: [ database_test ]
