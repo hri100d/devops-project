@@ -54,17 +54,6 @@ jobs:
       - name: Execute Unit Tests
         run: python3 -m unittest src/app_test.py
 
-  # git-leaks:
-  #   name: secrets detection
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         fetch-depth: 2
-  #     - uses: gitleaks/gitleaks-action@v2
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   database_test:
     needs: [ unittest, flake8, makrdown-lint, editorconfig-checker ]
     runs-on: ubuntu-latest
@@ -79,13 +68,27 @@ jobs:
       - name: Run SQLite tests
         run: python3 -m unittest src/app_test.py
 
-  sast:
+  sonarcloud:
     needs: [ database_test ]
     runs-on: ubuntu-latest
     steps:
-      - run: echo "SAST"
-  sca:
+      - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  snyk:
     needs: [ database_test ]
     runs-on: ubuntu-latest
     steps:
-      - run: echo "SCA"
+    - uses: actions/checkout@v3
+    - name: Run Snyk
+      working-directory: ${{github.workspace}}/src
+      run: |
+        pip install -r requirements.txt
+        npm install -g snyk
+        snyk auth ${{ secrets.SNYK_TOKEN }}
+        snyk test
