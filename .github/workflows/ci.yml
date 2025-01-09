@@ -20,13 +20,13 @@ jobs:
     name: flake8
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Setup Python
         uses: actions/setup-python@v1
         with:
           python-version: 3.10.16
           architecture: x64
-      - name: Checkout
-        uses: actions/checkout@v3
       - name: Install flake8
         run: pip install flake8
       - name: Run flake8
@@ -41,5 +41,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.10.13
+          architecture: x64
+      - name: Install unittest
+        run: pip install unittest
       - name: Execute Unit Tests
-        uses: onichandame/python-test-action@master
+        run: python3 -m unittest src/app_test.py
