@@ -34,8 +34,10 @@ def add_item():
     item = request.json
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO ITEM (ID, NAME) VALUES (?, ?)",
-            (item['id'], item['name']))
+        cursor.execute(
+            "INSERT INTO ITEM (ID, NAME) VALUES (?, ?)",
+            (item['id'], item['name'])
+        )
         conn.commit()
     return jsonify({"message": "Item added successfully!"}), 201
 
