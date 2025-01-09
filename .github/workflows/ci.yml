@@ -46,5 +46,7 @@ jobs:
         with:
           python-version: 3.10.16
           architecture: x64
+      - name: Install dependencies
+        run: pip install -r requirements.txt
       - name: Execute Unit Tests
         run: python3 -m unittest src/app_test.py
