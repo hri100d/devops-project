@@ -4,7 +4,9 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-DB_PATH = os.getenv("DB_PATH", "items.db")  # Позволява динамична настройка на пътя до базата
+DB_PATH = os.getenv("DB_PATH",
+                     "items.db")
+
 
 def init_db():
     if not os.path.exists(DB_PATH):
@@ -12,9 +14,11 @@ def init_db():
             with open("sql/V1_Create_item_table.sql", "r") as f:
                 conn.executescript(f.read())
 
+
 @app.route('/', methods=['GET'])
 def home():
     return jsonify({"message": "Welcome to the Items API!"}), 200
+
 
 @app.route('/items', methods=['GET'])
 def get_items():
@@ -23,6 +27,7 @@ def get_items():
         cursor.execute("SELECT * FROM ITEM")
         items = cursor.fetchall()
     return jsonify(items), 200
+
 
 @app.route('/items', methods=['POST'])
 def add_item():
@@ -33,6 +38,7 @@ def add_item():
         conn.commit()
     return jsonify({"message": "Item added successfully!"}), 201
 
+
 @app.route('/items/<int:id>', methods=['DELETE'])
 def delete_item(id):
     with sqlite3.connect(DB_PATH) as conn:
@@ -40,6 +46,7 @@ def delete_item(id):
         cursor.execute("DELETE FROM ITEM WHERE ID = ?", (id,))
         conn.commit()
     return jsonify({"message": "Item deleted successfully!"}), 200
+
 
 if __name__ == '__main__':
     init_db()
