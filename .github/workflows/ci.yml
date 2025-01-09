@@ -72,24 +72,27 @@ jobs:
     needs: [ database_test ]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   snyk:
-    needs: [ database_test ]
-    runs-on: ubuntu-latest
-    steps:
+  needs: [ database_test ]
+  runs-on: ubuntu-latest
+  steps:
     - uses: actions/checkout@v3
+    - name: Debug File Locations
+      run: ls -R
     - name: Run Snyk
-      working-directory: ${{github.workspace}}/src
+      working-directory: ${{ github.workspace }}/src
       run: |
-        pip install -r src/requirements.txt
+        pip install -r requirements.txt
         npm install -g snyk
         snyk auth ${{ secrets.SNYK_TOKEN }}
         snyk test
+
