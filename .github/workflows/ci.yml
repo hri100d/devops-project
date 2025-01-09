@@ -68,7 +68,6 @@ jobs:
   database_test:
     needs: [ unittest, flake8, makrdown-lint, editorconfig-checker ]
     runs-on: ubuntu-latest
-    services:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
