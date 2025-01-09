@@ -86,8 +86,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Debug File Locations
-        run: ls -R
       - name: Run Snyk
         working-directory: ${{ github.workspace }}/src
         run: |
@@ -95,4 +93,6 @@ jobs:
           npm install -g snyk
           snyk auth ${{ secrets.SNYK_TOKEN }}
           snyk test
+          snyk fix
+
 
