@@ -20,7 +20,7 @@ class TestApp(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_add_item(self):
-        response = self.client.post("/items", 
+        response = self.client.post("/items",
                                     json={"id": 1, "name": "Test Item"})
         self.assertEqual(response.status_code, 201)
 
