@@ -54,19 +54,29 @@ jobs:
       - name: Execute Unit Tests
         run: python3 -m unittest src/app_test.py
 
-  database_test:
-    needs: [ unittest, flake8, markdown-lint, editorconfig-checker ]
+   database_test:
+    needs: [ unittest, flake8, makrdown-lint, editorconfig-checker ]
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_DB: db
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - uses: joshuaavalon/flyway-action@v3.0.0
         with:
-          python-version: 3.10.16
-      - name: Install dependencies
-        run: pip install -r src/requirements.txt
-      - name: Run SQLite tests
-        run: python3 -m unittest src/app_test.py
+          url: jdbc:postgresql://postgres:5432/db
+          user: user
+          password: password
+      - run: echo 'testing'
 
   sonarcloud:
     needs: [ database_test ]
