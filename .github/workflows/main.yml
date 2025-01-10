@@ -12,15 +12,21 @@ jobs:
 
   database_test:
     name: Database Testing
-    needs: lint
     uses: ./.github/workflows/database_test.yml
+    needs: lint
 
   validate:
     name: Validation (Snyk & SonarCloud)
-    needs: database_test
     uses: ./.github/workflows/validate.yml
+    needs: database_test
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   docker:
     name: Docker Build and Push
-    needs: validate
     uses: ./.github/workflows/docker.yml
+    needs: validate
+    secrets:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
