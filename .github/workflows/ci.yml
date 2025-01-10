@@ -39,7 +39,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   unittest:
-    needs: [ flake8, markdown-lint, editorconfig-checker ]
+    name: unittest
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -55,7 +55,7 @@ jobs:
         run: python3 -m unittest src/app_test.py
 
   database_test:
-    needs: [ flake8, markdown-lint, editorconfig-checker]
+    needs: [unittest, flake8, markdown-lint, editorconfig-checker]
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -79,7 +79,7 @@ jobs:
       - run: echo 'testing'
 
   sonarcloud:
-    needs: [database_test, unittest]
+    needs: [database_test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -92,7 +92,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   snyk:
-    needs: [database_test, unittest]
+    needs: [database_test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -129,7 +129,7 @@ jobs:
           severity: "CRITICAL,HIGH"
 
   push-docker-image:
-    needs: [ test-docker-image ]
+    needs: [test-docker-image]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
