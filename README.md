@@ -1,81 +1,64 @@
-# **DevOps Project**
+# DevOps Project
 
 This repository contains a Python-based application with a robust CI/CD pipeline implemented using GitHub Actions. The pipeline automates tasks such as code linting, unit testing, Docker image management, and vulnerability scanning to ensure high code quality and secure deployments.
 
-## **CI/CD Pipeline Overview**
+---
 
-The CI/CD pipeline is defined in the following GitHub Actions workflows:
+## CI/CD Pipeline Overview
 
-### **1. CI Workflow**
-**Path**: `.github/workflows/ci.yml`
-**Trigger**: Runs on every `push` event.
+The CI/CD pipeline is implemented through multiple GitHub Actions workflows, each handling a specific stage of the process. These workflows are orchestrated in a `main.yml` file to maintain sequential execution and modularity.
 
-#### **Jobs in the CI Workflow:**
+### Workflows
 
-1. **EditorConfig Checker**
-   - **Description**: Ensures consistent coding styles using `.editorconfig` rules.
-   - **Key Tools**: `editorconfig-checker`.
-   - **Trigger**: Runs on every push.
+#### 1. **Lint Workflow**
+- **Path:** `.github/workflows/lint.yml`
+- **Trigger:** Runs on every push event.
+- **Jobs:**
+  - **EditorConfig Checker:** Ensures consistent coding styles using `.editorconfig` rules.
+    - Key Tools: `editorconfig-checker`.
+  - **Markdown Lint:** Validates Markdown files to ensure proper formatting.
+    - Key Tools: `markdown-cli` (executed via `npx`).
+  - **Flake8:** Lints Python code to identify potential issues and enforce style guidelines.
+    - Key Tools: `flake8`.
+  - **Unit Tests:** Executes unit tests for the application.
+    - Key Tools: Python's built-in `unittest` framework.
+    - Test Location: `src/app_test.py`.
 
-2. **Markdown Lint**
-   - **Description**: Validates Markdown files to ensure proper formatting.
-   - **Key Tools**: `markdown-cli` (executed via `npx`).
-   - **Trigger**: Runs on every push.
+#### 2. **Database Test Workflow**
+- **Path:** `.github/workflows/database_test.yml`
+- **Trigger:** Runs after the completion of the Lint Workflow.
+- **Jobs:**
+  - **Database Tests:** Executes database-specific tests, including migrations and health checks.
+    - Dependencies: Requires successful completion of Lint Workflow.
+    - Key Tools: PostgreSQL and Flyway.
 
-3. **Flake8**
-   - **Description**: Lints Python code to identify potential issues and enforce style guidelines.
-   - **Key Tools**: `flake8`.
-   - **Trigger**: Runs on every push.
+#### 3. **Validate Workflow**
+- **Path:** `.github/workflows/validate.yml`
+- **Trigger:** Runs after the completion of Database Test Workflow.
+- **Jobs:**
+  - **SonarCloud Analysis:** Performs code quality analysis.
+    - Key Tools: `sonarcloud-github-action`.
+  - **Snyk Vulnerability Testing:** Scans the application for vulnerabilities in dependencies.
+    - Key Tools: `snyk`.
 
-4. **Unit Tests**
-   - **Description**: Executes unit tests for the application.
-   - **Key Tools**: Python's built-in `unittest` framework.
-   - **Trigger**: Runs on every push.
-   - **Test Location**: `src/app_test.py`.
-
-5. **Database Tests**
-   - **Description**: Runs database-specific tests to ensure proper functionality, including migrations and health checks.
-   - **Dependencies**: Requires successful completion of Unit Tests, Flake8, Markdown Lint, and EditorConfig Checker.
-   - **Key Tools**: PostgreSQL and `flyway`.
-
-6. **SonarCloud Analysis**
-   - **Description**: Performs code quality analysis using SonarCloud.
-   - **Key Tools**: `sonarcloud-github-action`.
-   - **Dependencies**: Requires successful completion of Database Tests.
-
-7. **Snyk Vulnerability Testing**
-   - **Description**: Scans the application for vulnerabilities in dependencies.
-   - **Key Tools**: `snyk`.
-   - **Dependencies**: Requires successful completion of Database Tests.
-
-8. **Test Docker Image**
-   - **Description**: Builds and tests the Docker image for the application.
-   - **Key Tools**: `docker` and `Trivy` vulnerability scanner.
-   - **Dependencies**: Requires successful completion of Unit Tests, Flake8, Markdown Lint, and EditorConfig Checker.
-
-9. **Push Docker Image**
-   - **Description**: Pushes the tested Docker image to Docker Hub.
-   - **Key Tools**: `docker/login-action` and `docker push`.
-   - **Dependencies**: Requires successful completion of Test Docker Image, Snyk, and SonarCloud Analysis.
+#### 4. **Docker Workflow**
+- **Path:** `.github/workflows/docker.yml`
+- **Trigger:** Runs after the completion of Validate Workflow.
+- **Jobs:**
+  - **Test Docker Image:** Builds and scans the Docker image for vulnerabilities.
+    - Key Tools: Docker and Trivy Vulnerability Scanner.
+  - **Push Docker Image:** Pushes the tested Docker image to Docker Hub.
+    - Key Tools: `docker/login-action` and `docker push`.
 
 ---
 
-### **2. Pull Request Workflow**
-**Path**: `.github/workflows/pull_request.yml`
-**Trigger**: Runs on `pull_request` events (`opened`, `reopened`).
+## Repository Structure
 
-#### **Job in the Pull Request Workflow:**
-
-1. **SonarCloud Scan**
-   - **Description**: Analyzes pull request changes for code quality using SonarCloud.
-   - **Key Tools**: `sonarcloud-github-action`.
-
----
-
-## **Repository Structure**
-
-- `.github/workflows/ci.yml`: Defines the CI/CD pipeline.
-- `.github/workflows/pull_request.yml`: Pull Request workflow for SonarCloud analysis.
+- `.github/workflows/main.yml`: Orchestrates the execution of all other workflows.
+- `.github/workflows/lint.yml`: Handles code linting and unit tests.
+- `.github/workflows/database_test.yml`: Handles database-related testing.
+- `.github/workflows/validate.yml`: Validates the code using SonarCloud and Snyk.
+- `.github/workflows/docker.yml`: Builds and pushes Docker images.
 - `src/`: Source code for the Python application.
 - `sql/`: SQL scripts required by the application.
 - `Dockerfile`: Instructions for building the Docker image.
@@ -85,7 +68,7 @@ The CI/CD pipeline is defined in the following GitHub Actions workflows:
 
 ---
 
-## **Secrets Configuration**
+## Secrets Configuration
 
 Ensure the following secrets are configured in your repository settings:
 
@@ -97,41 +80,41 @@ Ensure the following secrets are configured in your repository settings:
 
 ---
 
-## **Getting Started**
+## Getting Started
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/hri100d/devops-project.git
-   ```
+### Clone the Repository
+```bash
+git clone https://github.com/hri100d/devops-project.git
+```
 
-2. **Install Dependencies**
-   ```bash
-   pip install -r src/requirements.txt
-   ```
+### Install Dependencies
+```bash
+pip install -r src/requirements.txt
+```
 
-3. **Run Unit Tests Locally**
-   ```bash
-   python3 -m unittest src/app_test.py
-   ```
+### Run Unit Tests Locally
+```bash
+python3 -m unittest src/app_test.py
+```
 
-4. **Build Docker Image Locally**
-   ```bash
-   docker build -t devops-project-image .
-   ```
+### Build Docker Image Locally
+```bash
+docker build -t devops-project-image .
+```
 
-5. **Push Docker Image**
-   ```bash
-   docker tag devops-project-image <DOCKER_USERNAME>/devops-project-image
-   docker push <DOCKER_USERNAME>/devops-project-image
-   ```
+### Push Docker Image
+```bash
+docker tag devops-project-image <DOCKER_USERNAME>/devops-project-image
+docker push <DOCKER_USERNAME>/devops-project-image
+```
 
 ---
 
-### **Key Tools Used**
+## Key Tools Used
 
-- **Code Quality and Linting**: `flake8`, `editorconfig-checker`, `markdown-cli`
-- **Unit Testing**: Python's `unittest`
-- **Database Testing**: PostgreSQL and `flyway`
-- **Vulnerability Scanning**: `Snyk` and `Trivy`
-- **Code Analysis**: `SonarCloud`
-- **Containerization**: Docker
+- **Code Quality and Linting:** `flake8`, `editorconfig-checker`, `markdown-cli`
+- **Unit Testing:** Python's `unittest`
+- **Database Testing:** PostgreSQL and Flyway
+- **Vulnerability Scanning:** Snyk and Trivy
+- **Code Analysis:** SonarCloud
+- **Containerization:** Docker
