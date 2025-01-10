@@ -1,6 +1,12 @@
 name: Docker Workflow
 
-on: [push]
+on:
+  workflow_call:
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
 
 jobs:
   push-docker-image:

@@ -1,7 +1,8 @@
 # database_test.yml
 name: Database Test
 
-on: [push]
+on:
+  workflow_call:
 
 jobs:
   database_test:

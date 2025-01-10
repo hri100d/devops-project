@@ -1,7 +1,13 @@
 # validate.yml
 name: Validate Code
 
-on: [push]
+on:
+  workflow_call:
+    secrets:
+      SONAR_TOKEN:
+        required: true
+      SNYK_TOKEN:
+        required: true
 
 jobs:
   snyk:
