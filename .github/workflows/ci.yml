@@ -3,7 +3,8 @@ name: CI
 on: [push]
 
 jobs:
-  editorconfig-checker:
+  lint-checks:
+    editorconfig-checker:
     name: editorconfig-checker
     runs-on: ubuntu-latest
     steps:
@@ -24,17 +25,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Cache Python Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - name: Setup Python
         uses: actions/setup-python@v1
         with:
           python-version: 3.10.16
-          architecture: x64
       - name: Install flake8
         run: pip install flake8
       - name: Run flake8
         uses: suo/flake8-github-action@releases/v1
         with:
-          checkName: "flake8" # NOTE: this needs to be the same as the job name
+          checkName: "flake8"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -44,18 +51,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Cache Python Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - name: Setup Python
         uses: actions/setup-python@v1
         with:
           python-version: 3.10.16
-          architecture: x64
       - name: Install dependencies
         run: pip install -r src/requirements.txt
       - name: Execute Unit Tests
         run: python3 -m unittest src/app_test.py
 
   database_test:
-    needs: [ unittest, flake8, markdown-lint, editorconfig-checker ]
+    needs: [ unittest, flake8, lint-checks ]
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -96,6 +109,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Cache Python Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - name: Install Python Dependencies
         run: pip install -r src/requirements.txt
       - name: Install Snyk
@@ -107,34 +127,45 @@ jobs:
         run: snyk test
 
   test-docker-image:
-    needs: [ unittest, flake8, markdown-lint, editorconfig-checker ]
+    needs: [ unittest, flake8, lint-checks ]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Build Docker image
-      run: docker build -t "classwork-image" .
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: 'classwork-image'
-        format: 'table'
-        exit-code: '1'
-        ignore-unfixed: true
-        severity: 'CRITICAL,HIGH'
+      - uses: actions/checkout@v3
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v2
+        with:
+          dockerfile: Dockerfile
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
+      - name: Build Docker image
+        run: docker build -t "classwork-image" .
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'classwork-image'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
 
   push-docker-image:
     needs: [ test-docker-image, snyk, sonarcloud ]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-    - name: Build Docker image
-      run: docker build -t "classwork-image" .
-    - name: Docker Tag
-      run: docker tag "classwork-image" ${{ secrets.DOCKER_USERNAME }}"/classwork-image"
-    - name: Docker Push
-      run: docker push ${{ secrets.DOCKER_USERNAME }}"/classwork-image"
+      - uses: actions/checkout@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Docker image
+        run: docker build -t "classwork-image" .
+      - name: Docker Tag
+        run: docker tag "classwork-image" ${{ secrets.DOCKER_USERNAME }}/classwork-image
+      - name: Docker Push
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/classwork-image
