@@ -126,31 +126,22 @@ jobs:
         run: snyk test
 
   test-docker-image:
-    needs: [ unittest, flake8, editorconfig-checker, markdown-lint ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Lint Dockerfile
-        uses: hadolint/hadolint-action@v2
-        with:
-          dockerfile: Dockerfile
-      - name: Cache Docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-docker-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-docker-
-      - name: Build Docker image
-        run: docker build -t "classwork-image" .
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'classwork-image'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v3
+    - name: Lint Dockerfile
+      run: docker run --rm -i hadolint/hadolint < Dockerfile
+    - name: Build Docker image
+      run: docker build -t "classwork-image" .
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'classwork-image'
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        severity: 'CRITICAL,HIGH'
+
 
   push-docker-image:
     needs: [ test-docker-image, snyk, sonarcloud ]
