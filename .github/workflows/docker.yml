@@ -4,7 +4,6 @@ on: [push]
 
 jobs:
   push-docker-image:
-    needs: [snyk, sonarcloud]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
