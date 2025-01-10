@@ -3,8 +3,7 @@ name: CI
 on: [push]
 
 jobs:
-  lint-checks:
-    editorconfig-checker:
+  editorconfig-checker:
     name: editorconfig-checker
     runs-on: ubuntu-latest
     steps:
@@ -68,7 +67,7 @@ jobs:
         run: python3 -m unittest src/app_test.py
 
   database_test:
-    needs: [ unittest, flake8, lint-checks ]
+    needs: [ unittest, flake8, editorconfig-checker, markdown-lint ]
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -127,7 +126,7 @@ jobs:
         run: snyk test
 
   test-docker-image:
-    needs: [ unittest, flake8, lint-checks ]
+    needs: [ unittest, flake8, editorconfig-checker, markdown-lint ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
