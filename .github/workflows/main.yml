@@ -1,0 +1,26 @@
+name: Main CI/CD Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Linting and Unit Tests
+    uses: ./.github/workflows/lint.yml
+
+  database_test:
+    name: Database Testing
+    needs: lint
+    uses: ./.github/workflows/database_test.yml
+
+  validate:
+    name: Validation (Snyk & SonarCloud)
+    needs: database_test
+    uses: ./.github/workflows/validate.yml
+
+  docker:
+    name: Docker Build and Push
+    needs: validate
+    uses: ./.github/workflows/docker.yml
